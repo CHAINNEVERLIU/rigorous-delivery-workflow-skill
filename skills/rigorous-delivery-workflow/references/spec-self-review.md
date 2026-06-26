@@ -31,6 +31,8 @@ Ask:
 - Could existing integrations or clients break?
 - Could deployment or configuration fail?
 - Is observability sufficient to diagnose failure?
+- Could a multi-step write leave a false success or half-success state?
+- Are retries and idempotent replays safe?
 
 ### Pass 3: Testability
 
@@ -40,6 +42,8 @@ Ask:
 - Are regression tests named?
 - Are failure modes tested?
 - Are browser/manual checks included when user experience matters?
+- Are default quality gates separated from external-service smoke tests?
+- Does each new test describe expected RED and valid GREEN evidence?
 
 ### Pass 4: No-Context Executability
 
@@ -49,6 +53,8 @@ Ask:
 - Are examples accurate against current code?
 - Are fixture names, route names, selectors, and method names real?
 - Are vague phrases removed?
+- Are delivery state, review ledger, and verification matrix expectations explicit?
+- Are prompts strong enough if copied to a low-capability external AI?
 
 ### Pass 5: Scope Drift and Future Extension
 
@@ -57,6 +63,17 @@ Ask:
 - Are future extension points preserved?
 - Are temporary shortcuts forbidden or clearly isolated?
 - Are data migrations and compatibility paths considered?
+- Are allowed and forbidden paths explicit?
+- Are untracked/generated artifacts handled?
+
+### Pass 6: External Handoff and Recovery
+
+Ask:
+- If an external AI reviews or implements this, is the prompt no-context and constrained?
+- Does the plan instruct the user to paste complete external AI output back?
+- Is there a review ledger for imported findings?
+- Can the task resume after interruption from the state file?
+- Are stale verification and scope changes recorded?
 
 ## Output Format
 

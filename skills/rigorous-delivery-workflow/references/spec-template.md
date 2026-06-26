@@ -1,5 +1,20 @@
 # Spec Template
 
+## Contents
+
+- Title
+- Goal and background
+- Scope and affected surfaces
+- Functional and non-functional requirements
+- Contracts
+- State, data, and migration
+- Error handling
+- Security and authorization
+- Rollout and operations
+- Testing and acceptance
+- External handoff
+- Risks and delivery bar
+
 Use this template for non-trivial software work before implementation.
 
 ## Title
@@ -26,6 +41,12 @@ Out of scope:
 - <explicitly excluded behavior or surface>
 
 Do not leave scope implicit. If a surface might be affected, list whether it is in or out.
+
+Allowed paths:
+- <roots or files this work may touch>
+
+Forbidden paths:
+- <roots or files this work must not touch>
 
 ## Affected Surfaces
 
@@ -83,6 +104,8 @@ For each contract:
 - Rollback or recovery:
 - Idempotency:
 - Data retention:
+- Half-success prevention:
+- Retry behavior:
 
 ## Error Handling
 
@@ -127,6 +150,8 @@ List exact categories:
 - performance:
 - manual smoke:
 
+Separate default quality gates from external-service smoke tests. If a test requires a service the command does not start, name it as a separate smoke check.
+
 ## Acceptance Criteria
 
 Each criterion must map to evidence:
@@ -134,6 +159,14 @@ Each criterion must map to evidence:
 | Criterion | Evidence |
 | --- | --- |
 | <criterion> | <test, command, review, or manual smoke evidence> |
+
+## External Handoff Requirements
+
+- External review needed: yes/no
+- External implementation allowed: yes/no
+- External validation needed: yes/no
+- Prompt template to use:
+- User must paste complete external AI output back: yes/no
 
 ## Risks and Open Questions
 
@@ -144,3 +177,10 @@ Each criterion must map to evidence:
 ## Delivery Bar
 
 Define what must be true before the task is considered deliverable.
+
+Include:
+- review ledger closed,
+- verification matrix complete,
+- drift check passed,
+- untracked/generated artifacts handled,
+- P0/P1 findings resolved.

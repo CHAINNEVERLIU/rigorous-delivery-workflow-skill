@@ -1,162 +1,149 @@
 ---
 name: rigorous-delivery-workflow
-description: Use when a software request needs commercial-grade delivery quality, no-context execution readiness, production hardening, strict review, or verified handoff across frontend, backend, full-stack, CLI, scripts, infrastructure, refactors, bugfixes, or security work.
+description: Use when a software request needs commercial-grade delivery quality, no-context execution readiness, long-task continuity, external AI review/implementation handoff, production hardening, strict review, verified handoff, or resilient execution across frontend, backend, full-stack, CLI, scripts, infrastructure, refactors, bugfixes, or security work.
 ---
 
 # Rigorous Delivery Workflow
 
-## Purpose
-
-Use this skill to run software work from request to delivery with explicit gates. It is technology-agnostic: discover the repo, stack, tests, and risks before selecting project-specific commands.
+Use this skill as a delivery controller, not as a long checklist. Keep state explicit, route to the right specialist skills, verify with fresh evidence, and make every external review or implementation result auditable.
 
 ## Non-Negotiables
 
+- Maintain a delivery state artifact for non-trivial or interruptible work.
+- Do not rely on conversation memory when a state artifact exists. Read it before resuming.
 - Do not start implementation until the spec and implementation plan have converged, unless the user explicitly asks for exploratory code.
-- Do not claim completion without fresh verification evidence.
-- Do not review only what the user names. Review commercial readiness, regressions, security, compatibility, operations, tests, docs, and future extension.
-- Do not let a local pass hide cross-surface impact. Check any affected API, CLI, UI, data format, config, docs, deployment, and tests.
-- Do not weaken security, authorization, validation, error handling, or existing tests to pass a task.
-- Do not expand scope silently. If scope changes, stop and record the decision needed.
+- Prefer autonomous progress over repeated confirmation. Ask the user only for real blockers, destructive actions, credentials, production release, paid external actions, or explicit scope conflicts.
+- Do not let external AI, subagents, or previous summaries decide completion. Treat their output as evidence to verify.
+- Do not claim completion without fresh verification after the last relevant change.
+- Do not weaken security, authorization, validation, error handling, audit behavior, or existing tests to pass a task.
+- Do not expand scope silently. If scope changes, update state and mark invalidated verification.
 
-## Workflow
+## State Machine
 
-### 1. Clarify Request
+For substantial work, create or update a state file before deep work:
 
-Identify:
-- goal and user value,
-- in-scope and out-of-scope work,
-- target users and key workflows,
-- existing constraints and compatibility promises,
-- likely affected surfaces,
-- acceptance criteria and required evidence.
+```text
+docs/superpowers/plans/YYYY-MM-DD-<slug>.state.md
+```
 
-If the user asks to proceed without answers, record assumptions and risks.
+If the repository uses another planning location, use the local convention. Load `references/delivery-state-template.md`.
 
-Set artifact paths before drafting. Prefer the repository's existing spec/plan location. If none exists, use `docs/specs/YYYY-MM-DD-<slug>-spec.md` and `docs/specs/YYYY-MM-DD-<slug>-implementation-plan.md`. Do not overwrite unrelated planning artifacts.
+Phases:
 
-### 2. Write Spec
+1. `bootstrap_state`: capture objective, latest user instruction, scope, allowed/forbidden paths, assumptions, and next single action.
+2. `clarify_or_assume`: ask only blocking questions; otherwise record assumptions and continue.
+3. `draft_spec`: load `references/spec-template.md`.
+4. `self_review_spec`: load `references/spec-self-review.md`; converge P0/P1 to zero.
+5. `external_review_handoff`: when requested, load `references/external-ai-handoff.md` and the low-intelligence review prompt.
+6. `draft_plan`: load `references/implementation-plan-template.md`; make it no-context executable.
+7. `execute_plan`: load `references/execution-protocol.md`, `references/skill-routing-matrix.md`, `references/tdd-red-green-rules.md`, and domain skills as needed.
+8. `drift_check`: load `references/drift-detection.md`; run after each task and before final delivery.
+9. `final_review`: load `references/final-delivery-review.md`, `references/verification-matrix.md`, and `references/failure-mode-review.md`.
+10. `external_validation_handoff`: when requested, generate a low-intelligence validation prompt and ask the user to paste the full result back.
 
-Create a spec before implementation for non-trivial work. Load `references/spec-template.md`.
+At every phase transition, update the state file's `Current Phase`, `Verification Ledger`, `Drift Ledger`, `Review Findings Ledger`, and `Next Single Action`.
 
-The spec must define behavior, contracts, errors, data, security, compatibility, tests, rollout, and non-goals.
+## Interruptions And Autonomy
 
-### 3. Self-Review Spec Until Converged
+Load `references/autonomy-and-interruptions.md` when:
 
-Load `references/spec-self-review.md`. Run repeated review passes until:
-- P0 = 0,
-- P1 = 0,
-- every P2 is fixed or explicitly accepted with rationale,
-- every success criterion has verification evidence planned,
-- `scripts/scan-red-flags.py` reports no hits on the spec.
+- the user asks unrelated questions mid-task,
+- the user changes scope,
+- context was compacted or another agent resumes,
+- external AI results are expected or returned,
+- the work is long enough that state drift is plausible.
 
-Revise the spec after each pass. Record the review rounds.
+Default behavior:
 
-### 4. Write No-Context Implementation Plan
+- Answer short side questions, then return to `Next Single Action`.
+- If the user starts a new task, ask whether to pause the active delivery workflow.
+- If a new instruction conflicts with scope, update state and mark stale plan/test evidence.
+- If the user asks for an external AI prompt, generate it and explicitly tell the user to paste back the complete external AI output.
 
-Load `references/implementation-plan-template.md`.
+## External AI And Subagents
 
-The plan must be executable by an agent with no conversation history. Include:
-- exact files to inspect, create, or modify,
-- exact tests to add,
-- exact commands to run,
-- order of tasks,
-- focused and regression verification,
-- drift checks,
-- final handoff format.
+Use external AI prompts when the user wants another AI to review, implement, or validate. Load:
 
-Avoid vague instructions. Include code examples where incorrect implementation is likely.
+- `references/external-ai-handoff.md`
+- `references/external-review-prompt-low-intelligence.md`
+- `references/external-implementation-prompt-low-intelligence.md`
+- `references/external-validation-prompt-low-intelligence.md`
+- `references/review-ledger.md`
 
-Then self-review the plan against `references/spec-self-review.md` (it covers both spec and plan) until the same convergence rule is met and `scripts/scan-red-flags.py` reports no hits on the plan. Do not advance to external review with an unreviewed plan.
+Rules:
 
-### 5. Request External Review
+- Prompts must be no-context and strong enough for a low-capability AI: explicit role, scope, forbidden paths, exact artifacts, step machine, output template, blocked protocol, and completion bans.
+- After emitting an external AI prompt, tell the user: "Paste the external AI's complete output back here; do not paste only a summary. I will verify it and import valid findings into the review ledger."
+- External AI implementation is only a candidate implementation. Re-read diffs, run tests, check drift, and verify evidence before accepting it.
 
-Load `references/external-review-prompt.md`.
+Use subagents only for independent work with clear boundaries. Load `references/subagent-protocol.md`. The main agent must review outputs and evidence before accepting them.
 
-Generate a prompt for another reviewer to adversarially inspect the spec and plan for:
-- no-context executability,
-- commercial delivery gaps,
-- missing tests,
-- compatibility regressions,
-- security or data risks,
-- scope creep,
-- future rework risk.
+## Skill Routing
 
-Ingest review feedback with technical skepticism. Verify each finding against the repo. Fix valid findings and rerun self-review.
+Before each major phase, load the smallest useful skill set. Load `references/skill-routing-matrix.md`.
 
-### 6. Execute Plan
+Required routing examples:
 
-Load `references/execution-protocol.md` and `references/skill-selection.md`.
+- Review feedback: use receiving-code-review or an equivalent manual ledger.
+- Implementation: use executing-plans and test-driven-development when available.
+- Test failure or unexpected behavior: use systematic-debugging before fixing.
+- Frontend/browser work: use frontend-testing-debugging, React best-practice, Playwright, or equivalent skills when available.
+- Completion claim: use verification-before-completion or the final delivery review manually.
 
-At the start of each major phase:
-- inspect available skills/tools,
-- load the smallest useful set,
-- do not invent unavailable tools,
-- use manual equivalents when a tool is absent.
+If a matching skill is unavailable, record the manual equivalent in the checkpoint.
 
-Execute task-by-task:
-1. write or update tests first,
-2. run the focused failing test when practical,
-3. implement the smallest correct change,
-4. run focused verification,
-5. run related regression verification,
-6. run drift checks,
-7. review the diff against the spec, plan, contracts, security, and commercial readiness risks,
-8. update the plan checklist,
-9. emit a checkpoint.
+## Execution Gates
 
-Use subagents only for independent work with clear file boundaries or independent review. Main agent must review diffs, evidence, and scope before accepting any subagent output.
+Each implementation task must:
 
-### 7. Detect Drift
+1. Restate the task and allowed files.
+2. Add or update tests first.
+3. Run the focused test and classify RED using `references/tdd-red-green-rules.md`.
+4. Fix invalid REDs before implementation.
+5. Implement the smallest correct change.
+6. Run focused GREEN verification.
+7. Run related regression verification.
+8. Run drift detection.
+9. Review failure modes, security, contracts, and dirty worktree impact.
+10. Update state and emit a checkpoint.
 
-Load `references/drift-detection.md`.
+## Final Completion Gate
 
-Run drift checks after every task and before final delivery. Stop if implementation:
-- touches excluded areas,
-- adds unrequested features,
-- changes public contracts without approval,
-- weakens security or validation,
-- skips planned tests,
-- leaves vague markers,
-- breaks non-code surfaces.
+Do not claim completion if any of these is true:
 
-### 8. Final Delivery Review
+- Required verification was not run and no accepted reason is recorded.
+- Any P0/P1 finding remains unresolved.
+- Public contracts changed without approval or versioning.
+- Security, validation, authorization, or audit behavior is weakened.
+- Default quality gates depend on external services they do not start themselves.
+- External AI or subagent findings were not mapped into the review ledger.
+- Untracked source files, generated artifacts, or dirty worktree changes are not reported.
+- Drift detection has unresolved forbidden-path, scope, or test-weakening findings.
+- The final evidence matrix is missing.
 
-Load `references/final-delivery-review.md`.
-
-Before final response:
-- run full verification commands and capture fresh evidence (do not reuse earlier or subagent-reported results),
-- review diff scope,
-- rerun self-review until convergence,
-- run `scripts/scan-red-flags.py` on the spec, plan, and any new delivery artifacts,
-- list unrun tests and reasons,
-- report residual risks,
-- state whether the work meets the delivery bar.
-
-## Severity Scale
-
-- P0: security breach, data loss, authorization bypass, destructive action, production unusable, or explicit out-of-scope implementation.
-- P1: core workflow broken, contract regression, missing critical test, or major user-visible failure.
-- P2: deliverable but with clear maintainability, coverage, compatibility, or future-extension risk.
-- P3: wording, organization, polish, or minor robustness improvement.
+Load `references/final-delivery-review.md` and `references/verification-matrix.md` before final response.
 
 ## Resource Guide
 
-- `references/spec-template.md`: use when drafting a spec.
-- `references/spec-self-review.md`: use when reviewing a spec or plan for convergence.
-- `references/implementation-plan-template.md`: use when writing a no-context execution plan.
-- `references/external-review-prompt.md`: use when asking another AI or human to review a spec/plan.
-- `references/execution-protocol.md`: use when executing a plan.
-- `references/drift-detection.md`: use after every implementation task.
-- `references/final-delivery-review.md`: use before claiming delivery.
-- `references/skill-selection.md`: use when deciding which skills/tools/subagents to load.
-- `scripts/scan-red-flags.py`: run on specs/plans/reports to catch vague wording and unfinished markers.
-
-## Red-Flag Scan
-
-Run the scanner on generated specs and plans when Python is available:
-
-```bash
-python path/to/rigorous-delivery-workflow/scripts/scan-red-flags.py path/to/spec.md path/to/plan.md
-```
-
-The scanner fails on missing paths and is case-insensitive by default. Fix every hit unless it is inside a deliberate quoted example or a documented false positive.
+- `references/delivery-state-template.md`: create or resume a delivery state.
+- `references/autonomy-and-interruptions.md`: handle user interruptions, scope changes, and long-task recovery.
+- `references/spec-template.md`: draft a behavior/contract/security/test spec.
+- `references/spec-self-review.md`: self-review spec and plan until convergence.
+- `references/implementation-plan-template.md`: write a no-context implementation plan.
+- `references/execution-protocol.md`: execute task-by-task with evidence.
+- `references/skill-routing-matrix.md`: select specialist skills and tools.
+- `references/tdd-red-green-rules.md`: classify valid and invalid RED/GREEN cycles.
+- `references/failure-mode-review.md`: review write ordering, half-success, auth, idempotency, and contract failure paths.
+- `references/drift-detection.md`: detect scope, contract, security, and artifact drift.
+- `references/verification-matrix.md`: classify required verification and external-service prerequisites.
+- `references/final-delivery-review.md`: produce the final evidence and delivery verdict.
+- `references/external-ai-handoff.md`: coordinate external AI review/implementation/validation.
+- `references/external-review-prompt-low-intelligence.md`: generate robust external review prompts.
+- `references/external-implementation-prompt-low-intelligence.md`: generate robust external implementation prompts.
+- `references/external-validation-prompt-low-intelligence.md`: generate robust external validation prompts.
+- `references/review-ledger.md`: import review findings skeptically and close them with evidence.
+- `references/subagent-protocol.md`: delegate independent work without losing control.
+- `scripts/scan-red-flags.py`: scan changed or explicit files for unfinished markers.
+- `scripts/changed-files.py`: list changed and untracked files for handoff or final review.
+- `scripts/verify-drift.py`: check changed files against allowed/forbidden roots.
+- `scripts/state-check.py`: check delivery state completeness.

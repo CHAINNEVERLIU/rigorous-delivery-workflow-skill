@@ -1,18 +1,30 @@
 # No-Context Implementation Plan Template
 
-Use this template after the spec has converged.
+## Contents
+
+- Header
+- Execution rules
+- State and ledger requirements
+- File map
+- Verification matrix
+- Task structure
+- External AI implementation hook
+- Acceptance matrix
+- Self-review
+
+Use after the spec has converged. The plan must be executable by an agent with no conversation history and robust enough for low-capability external AI if copied into a handoff prompt.
 
 ## Header
 
 ```markdown
 # <Feature Name> Implementation Plan
 
-> For agentic workers: execute task-by-task. Update checklist status only after verification evidence exists.
-
-Goal: <one sentence>
-Architecture: <2-4 sentences>
-Tech stack discovered: <languages/frameworks/test tools>
-Approved spec: <path>
+Goal:
+Approved spec:
+Delivery state:
+Current repo roots:
+Tech stack discovered:
+Primary user workflows:
 ```
 
 ## Execution Rules
@@ -21,72 +33,94 @@ Include:
 - allowed file roots,
 - forbidden file roots,
 - public contracts that must not break,
-- security rules,
+- security and authorization rules,
+- data safety and failure-mode rules,
 - compatibility rules,
+- required specialist skills or manual equivalents,
 - required verification commands,
+- external-service prerequisites,
 - drift checks,
 - completion criteria.
 
+## State And Ledger Requirements
+
+Require the implementer to update:
+- delivery state,
+- review findings ledger,
+- execution checklist,
+- verification ledger,
+- drift ledger,
+- invalidated verification.
+
 ## File Map
 
-List exact files:
+| File | Action | Responsibility | Risk |
+| --- | --- | --- | --- |
+| path | create/modify/test/docs | reason | low/medium/high |
 
-| File | Action | Responsibility |
-| --- | --- | --- |
-| path | create/modify/test/docs | reason |
+## Verification Matrix
 
-## Commands
+For every command:
 
-Prefer project-native commands. Include OS variants when needed.
+| Command | Purpose | Scope | Starts Own Services | Requires External Service | CI Default | Pass Condition |
+| --- | --- | --- | --- | --- | --- | --- |
 
-```bash
-<focused test command>
-<full verification command>
-```
+Default quality gates must not depend on external services unless they start them.
 
 ## Task Structure
 
 Every task must include:
 
+- purpose,
 - files,
-- test to add or update,
+- tests to add/update,
+- expected RED,
 - implementation instructions,
-- focused verification,
+- focused GREEN,
 - regression verification,
+- failure-mode review,
 - drift check,
-- checklist update.
+- state updates.
 
 Example:
 
 ````markdown
 ### Task N: <name>
 
-Purpose: <why this task exists>
+Purpose:
 
 Files:
-- Test: <exact test file>
-- Modify: <exact source file>
+- Test:
+- Modify:
 
-- [ ] Add failing test:
+Allowed paths:
+- 
+
+Forbidden paths:
+- 
+
+- [ ] Add/update test first.
 
 ```<language>
-<exact or near-exact test code>
+<exact or near-exact test sketch when useful>
 ```
 
-- [ ] Run:
+- [ ] Run focused RED:
 
 ```bash
 <command>
 ```
 
-Expected before implementation: fail for <specific reason>.
+Expected RED:
+Actual RED classification: valid | invalid | environment | regression
 
 - [ ] Implement:
   - exact function/class/module to change,
-  - constraints,
+  - contract/security constraints,
+  - failure-mode constraints,
   - compatibility rule.
 
-- [ ] Run focused tests:
+- [ ] Run focused GREEN:
 
 ```bash
 <command>
@@ -98,27 +132,45 @@ Expected before implementation: fail for <specific reason>.
 <command>
 ```
 
+- [ ] Failure-mode review:
+  - auth/validation before writes,
+  - half-success state,
+  - idempotency/retry,
+  - contract/client compatibility.
+
 - [ ] Drift check:
-  - git diff --stat
-  - inspect changed files against allowed map
-  - verify no forbidden scope touched
+  - changed files,
+  - forbidden paths,
+  - untracked files,
+  - generated artifacts,
+  - public contract changes.
+
+- [ ] Update delivery state and evidence.
 ````
+
+## External AI Implementation Prompt Hook
+
+If the plan may be handed to another AI, add:
+
+```text
+Use references/external-implementation-prompt-low-intelligence.md. Paste the external AI's complete result back into the primary thread for verification. External implementation is a candidate only.
+```
 
 ## Acceptance Matrix
 
-| Area | Evidence | Pass Condition |
-| --- | --- | --- |
-| contract | command/test | expected result |
-| security | command/test | expected result |
-| user path | browser/manual/CLI | expected result |
+| Requirement | Implementation Evidence | Verification Evidence | Status |
+| --- | --- | --- | --- |
 
 ## Self-Review
 
 End with:
 - traceability to spec,
 - ambiguity audit,
-- risk review,
+- no-context executability audit,
+- failure-mode audit,
+- external-service test audit,
+- scope drift audit,
 - multi-round review log,
 - final verdict.
 
-Use `READY FOR IMPLEMENTATION` only after scans and review pass.
+Use `READY FOR IMPLEMENTATION` only after P0/P1 are zero, P2 is fixed or accepted, and red-flag/drift checks pass.

@@ -1,4 +1,4 @@
 interface:
   display_name: "Rigorous Delivery Workflow"
-  short_description: "Strict spec-to-delivery workflow"
-  default_prompt: "Use $rigorous-delivery-workflow to turn this software request into a verified delivery."
+  short_description: "Recoverable, verified software delivery workflow"
+  default_prompt: "Use $rigorous-delivery-workflow to run this software request through stateful planning, review, implementation, drift checks, external AI handoff when needed, and final verification."
